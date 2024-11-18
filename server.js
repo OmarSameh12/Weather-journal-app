@@ -10,20 +10,19 @@ const app = express();
 // Set the port for the server to listen on
 const port = 3000; // You can choose any port number
 
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+const cors = require('cors');
+
+app.use(cors());
+
+app.use(express.static('website'));
+
 // Start the server and listen on the specified port
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
-/* Middleware*/
-//Here we are configuring express to use body-parser as middle-ware.
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-
-// Cors for cross origin allowance
-
-// Initialize the main project folder
-app.use(express.static('website'));
 
 app.get('/projectData',(req,res)=>{
     res.send(projectData);
@@ -32,7 +31,7 @@ app.post('/addData', (req, res) => {
     projectData = {
         ...projectData,
         userData: {
-            temperature: req.body.temperature,
+            temperature: req.body.temp,
             date: req.body.date,
             userResponse: req.body.userinput, // Fix: Correctly map req.body.userinput
         },

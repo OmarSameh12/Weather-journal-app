@@ -8,10 +8,8 @@ let d = new Date();
 let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
 
 async function GetData(link,userinput,keypart) {
-    let dataToSend;
-    new Promise(async function(resolve, reject) {
+    let prom=new Promise(async function(resolve, reject) {
         const url = link+userinput+keypart+dynamicKey;
-        console.log(url);
         const response = await fetch (url, {
             method: 'GET', 
              });
@@ -19,29 +17,47 @@ async function GetData(link,userinput,keypart) {
                 resolve(response);
             }
             reject("failed to get data");
-    
-        }).then(async (value)=>{
-            let temprature = await value.json();
-            dataToSend = {
-                temp: temprature.main.temp,
-                date:newDate,
-                userinput:document.getElementById('feelings').value
-             }            
-            console.log("the object to be sent is -> ",dataToSend);
-            let response = await fetch('/http://127.0.0.1:3000/addData', {
-                method: 'POST', 
-                headers: {
-                    'Content-Type': 'application/json', // Add this header
-                },
-                body: JSON.stringify(dataToSend), // Convert dataToSend to JSON string
-            });
-            
-            if(response){
-                resolve(response);
-            }
-            reject("failed to send post request")
-        });
+        }).then(async (value)=>{sendData(value);}).then(async (value)=>{await UpdateUi(value);});
 }
+//send post request to server
+async function sendData(value) {
+    try {
+        let temperature = await value.json();
+        const dataToSend = {
+            temp: temperature.main.temp,
+            date: newDate,
+            userinput: document.getElementById('feelings').value
+        };            
+        console.log("The object to be sent is -> ", dataToSend);
+        
+        const response = await fetch('http://127.0.0.1:3000/addData', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend), 
+        });
+        if(response.ok){
+            console.log(dataToSend);
+            return dataToSend; 
+        }
+        return undefined;
+    } catch (error) {
+        console.error("Error:", error); 
+    }
+}
+
+//update ui function
+async function UpdateUi(dataObject){
+    console.log(dataObject);
+    let tempEl=document.getElementById('temp');
+    let dateEl=document.getElementById('date');
+    let contentEl=document.getElementById('content');
+    tempEl.textContent=dataObject.temp;
+    dateEl.textContent=dataObject.Date;
+    contentEl.textContent=dataObject.userinput;
+}
+//adding click event listener to start the chain
 document.getElementById('generate').addEventListener('click',()=>{
     let userinput = document.getElementById('zip').value;
     GetData(link,userinput,keypart);

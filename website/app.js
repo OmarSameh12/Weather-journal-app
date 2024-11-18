@@ -2,14 +2,14 @@
 dynamicKey='8ffd8f4dfc1d3e500ba97f1122617431';
 const link="https://api.openweathermap.org/data/2.5/weather?zip=";
 const keypart= ",us&appid=";
-
+const metricPart= '&units=metric';
 // Create a new date instance dynamically with JS
 let d = new Date();
-let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
+let newDate = (d.getMonth() + 1) + '.' + d.getDate() + '.' + d.getFullYear();
 let fetchedData={};
 async function GetData(link,userinput,keypart) {
     return new Promise(async function(resolve, reject) {
-        const url = link+userinput+keypart+dynamicKey;
+        const url = link+userinput+keypart+dynamicKey+metricPart;
         const response = await fetch (url, {
             method: 'GET', 
              });

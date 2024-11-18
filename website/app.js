@@ -6,9 +6,9 @@ const keypart= ",us&appid=";
 // Create a new date instance dynamically with JS
 let d = new Date();
 let newDate = d.getMonth()+'.'+ d.getDate()+'.'+ d.getFullYear();
-
+let fetchedData={};
 async function GetData(link,userinput,keypart) {
-    let prom=new Promise(async function(resolve, reject) {
+    return new Promise(async function(resolve, reject) {
         const url = link+userinput+keypart+dynamicKey;
         const response = await fetch (url, {
             method: 'GET', 
@@ -17,7 +17,7 @@ async function GetData(link,userinput,keypart) {
                 resolve(response);
             }
             reject("failed to get data");
-        }).then(async (value)=>{sendData(value);}).then(async (value)=>{await UpdateUi(value);});
+        });
 }
 //send post request to server
 async function sendData(value) {
@@ -28,20 +28,15 @@ async function sendData(value) {
             date: newDate,
             userinput: document.getElementById('feelings').value
         };            
-        console.log("The object to be sent is -> ", dataToSend);
         
-        const response = await fetch('http://127.0.0.1:3000/addData', {
+          await fetch('http://127.0.0.1:3000/addData', {
             method: 'POST', 
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(dataToSend), 
         });
-        if(response.ok){
-            console.log(dataToSend);
-            return dataToSend; 
-        }
-        return undefined;
+       return dataToSend;
     } catch (error) {
         console.error("Error:", error); 
     }
@@ -49,16 +44,20 @@ async function sendData(value) {
 
 //update ui function
 async function UpdateUi(dataObject){
-    console.log(dataObject);
     let tempEl=document.getElementById('temp');
     let dateEl=document.getElementById('date');
     let contentEl=document.getElementById('content');
-    tempEl.textContent=dataObject.temp;
-    dateEl.textContent=dataObject.Date;
-    contentEl.textContent=dataObject.userinput;
+    tempEl.textContent= `the tempreture is ${dataObject.temp}`;
+    dateEl.textContent= `the date is ${dataObject.date}`;
+    contentEl.textContent= `the note is ${dataObject.userinput}`;
 }
 //adding click event listener to start the chain
 document.getElementById('generate').addEventListener('click',()=>{
     let userinput = document.getElementById('zip').value;
-    GetData(link,userinput,keypart);
+    GetData(link,userinput,keypart).then(async (data)=>{
+        let res = await sendData(data);
+        return res;
+    }).then((dataObj)=>{
+        UpdateUi(dataObj);
+    });
 })

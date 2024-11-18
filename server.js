@@ -37,5 +37,4 @@ app.post('/addData', (req, res) => {
         },
     };
     res.send("data added");
-    console.log(projectData);
 });
